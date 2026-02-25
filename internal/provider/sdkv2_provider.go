@@ -103,6 +103,8 @@ const (
 	envVarBasicAuthPassword           = "JAMFPRO_BASIC_PASSWORD"
 	envVarJamfProFQDN                 = "JAMFPRO_INSTANCE_FQDN"
 	envVarJamfProAuthMethod           = "JAMFPRO_AUTH_METHOD"
+	envVarPlatformBaseURL             = "JAMFPLATFORM_BASE_URL"
+	envVarPlatformTenantID            = "JAMFPLATFORM_TENANT_ID"
 	jamfLoadBalancerCookieName        = "jpro-ingress"
 )
 
@@ -290,9 +292,9 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc(envVarJamfProAuthMethod, ""),
-				Description: "The auth method chosen for interacting with Jamf Pro. Options are 'basic' for username/password or 'oauth2' for client id/secret.",
+				Description: "The auth method chosen for interacting with Jamf Pro. Options are 'basic' for username/password, 'oauth2' for client id/secret, or 'platform' for Jamf platform gateway authentication.",
 				ValidateFunc: validation.StringInSlice([]string{
-					"basic", "oauth2",
+					"basic", "oauth2", "platform",
 				}, true),
 			},
 			"client_id": {
@@ -320,6 +322,19 @@ func Provider() *schema.Provider {
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc(envVarBasicAuthPassword, ""),
 				Description: "The Jamf Pro password used for authentication when auth_method is 'basic'.",
+			},
+			"jamfplatform_base_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc(envVarPlatformBaseURL, ""),
+				Description: "The Jamf platform gateway base URL for authentication when auth_method is 'platform'. Example: https://us.api.platform.jamf.com",
+			},
+			"tenant_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc(envVarPlatformTenantID, ""),
+				Description: "The Jamf Pro instance UUID (tenant ID) required when auth_method is 'platform'. Found on the Client Details page in Jamf Account.",
 			},
 			"enable_client_sdk_logs": {
 				Type:        schema.TypeBool,
@@ -549,7 +564,6 @@ func Provider() *schema.Provider {
 		sugaredLogger := defaultLogger.Sugar()
 
 		// Auth
-		jamfFQDN = GetJamfFqdn(d, &diags)
 		authMethod := GetAuthMethod(d, &diags)
 		tokenRefrshBufferPeriod := time.Duration(d.Get("token_refresh_buffer_period_seconds").(int)) * time.Second
 
@@ -557,6 +571,7 @@ func Provider() *schema.Provider {
 		bootstrapClient := http.Client{}
 		switch authMethod {
 		case "oauth2":
+			jamfFQDN = GetJamfFqdn(d, &diags)
 			clientId = GetClientID(d, &diags)
 			clientSecret = GetClientSecret(d, &diags)
 			jamfIntegration, err = jamfprointegration.BuildWithOAuth(
@@ -570,6 +585,7 @@ func Provider() *schema.Provider {
 			)
 
 		case "basic":
+			jamfFQDN = GetJamfFqdn(d, &diags)
 			basicAuthUsername = GetBasicAuthUsername(d, &diags)
 			basicAuthPassword = GetBasicAuthPassword(d, &diags)
 			jamfIntegration, err = jamfprointegration.BuildWithBasicAuth(
@@ -578,6 +594,36 @@ func Provider() *schema.Provider {
 				tokenRefrshBufferPeriod,
 				basicAuthUsername,
 				basicAuthPassword,
+				hide_sensitive_data,
+				bootstrapClient,
+			)
+
+		case "platform":
+			platformBaseURL := d.Get("jamfplatform_base_url").(string)
+			if platformBaseURL == "" {
+				return nil, append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Error getting platform base URL",
+					Detail:   "jamfplatform_base_url must be provided either as an environment variable (JAMFPLATFORM_BASE_URL) or in the Terraform configuration when using platform auth method",
+				})
+			}
+			tenantID := d.Get("tenant_id").(string)
+			if tenantID == "" {
+				return nil, append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Error getting tenant ID",
+					Detail:   "tenant_id must be provided either as an environment variable (JAMFPLATFORM_TENANT_ID) or in the Terraform configuration when using platform auth method",
+				})
+			}
+			clientId = GetClientID(d, &diags)
+			clientSecret = GetClientSecret(d, &diags)
+			jamfIntegration, err = jamfprointegration.BuildWithPlatformGatewayOAuth(
+				platformBaseURL,
+				sugaredLogger,
+				tokenRefrshBufferPeriod,
+				clientId,
+				clientSecret,
+				tenantID,
 				hide_sensitive_data,
 				bootstrapClient,
 			)

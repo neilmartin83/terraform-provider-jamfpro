@@ -10,6 +10,8 @@ type frameworkProviderModel struct {
 	ClientSecret                      types.String `tfsdk:"client_secret"`
 	BasicAuthUsername                 types.String `tfsdk:"basic_auth_username"`
 	BasicAuthPassword                 types.String `tfsdk:"basic_auth_password"`
+	PlatformBaseURL                   types.String `tfsdk:"jamfplatform_base_url"`
+	TenantID                          types.String `tfsdk:"tenant_id"`
 	EnableClientSDKLogs               types.Bool   `tfsdk:"enable_client_sdk_logs"`
 	ClientSDKLogExportPath            types.String `tfsdk:"client_sdk_log_export_path"`
 	HideSensitiveData                 types.Bool   `tfsdk:"hide_sensitive_data"`
