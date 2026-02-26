@@ -24,8 +24,8 @@ terraform {
 provider "jamfpro" {
   jamfpro_instance_fqdn                = var.jamfpro_instance_fqdn
   auth_method                          = var.jamfpro_auth_method
-  jamfplatform_base_url                = var.jamfplatform_base_url
-  tenant_id                            = var.jamfplatform_tenant_id
+  platform_base_url                    = var.jamfpro_platform_base_url
+  jamfpro_tenant_id                    = var.jamfpro_tenant_id
   client_id                            = var.jamfpro_client_id
   client_secret                        = var.jamfpro_client_secret
   basic_auth_username                  = var.jamfpro_basic_auth_username
@@ -50,13 +50,13 @@ variable "jamfpro_auth_method" {
   default     = ""
 }
 
-variable "jamfplatform_base_url" {
+variable "jamfpro_platform_base_url" {
   description = "The Jamf platform gateway base URL when auth_method is 'platform'. Example: https://us.api.platform.jamf.com"
   type        = string
   default     = ""
 }
 
-variable "jamfplatform_tenant_id" {
+variable "jamfpro_tenant_id" {
   description = "The Jamf Pro instance UUID (tenant ID) when auth_method is 'platform'."
   sensitive   = true
   type        = string
@@ -64,13 +64,13 @@ variable "jamfplatform_tenant_id" {
 }
 
 variable "jamfpro_client_id" {
-  description = "The Jamf Pro Client ID for authentication when auth_method is 'oauth2'."
+  description = "The client ID for authentication. For 'oauth2' this is the Jamf Pro API Client ID. For 'platform' this is the Jamf Platform Client ID from Jamf Account."
   sensitive   = true
   default     = ""
 }
 
 variable "jamfpro_client_secret" {
-  description = "The Jamf Pro Client secret for authentication when auth_method is 'oauth2'."
+  description = "The client secret for authentication. For 'oauth2' this is the Jamf Pro API Client secret. For 'platform' this is the Jamf Platform Client secret from Jamf Account."
   sensitive   = true
   default     = ""
 }
@@ -134,18 +134,18 @@ variable "jamfpro_mandatory_request_delay_milliseconds" {
 - `auth_method` (String) The auth method chosen for interacting with Jamf Pro. Options are 'basic' for username/password, 'oauth2' for client id/secret, or 'platform' for Jamf platform gateway authentication.
 - `basic_auth_password` (String, Sensitive) The Jamf Pro password used for authentication when auth_method is 'basic'.
 - `basic_auth_username` (String) The Jamf Pro username used for authentication when auth_method is 'basic'.
-- `client_id` (String) The Jamf Pro Client ID for authentication when auth_method is 'oauth2'.
+- `client_id` (String) The client ID for authentication. When auth_method is 'oauth2', this is the Jamf Pro API Client ID. When auth_method is 'platform', this is the Jamf Platform Client ID from Jamf Account.
 - `client_sdk_log_export_path` (String) Specify the path to export http client logs to.
-- `client_secret` (String, Sensitive) The Jamf Pro Client secret for authentication when auth_method is 'oauth2'.
+- `client_secret` (String, Sensitive) The client secret for authentication. When auth_method is 'oauth2', this is the Jamf Pro API Client secret. When auth_method is 'platform', this is the Jamf Platform Client secret from Jamf Account.
 - `custom_cookies` (Block List) Persistent custom cookies used by HTTP Client in all requests. (see [below for nested schema](#nestedblock--custom_cookies))
 - `enable_client_sdk_logs` (Boolean) Debug option to propagate logs from the SDK and HttpClient
 - `hide_sensitive_data` (Boolean) Define whether sensitive fields should be hidden in logs. Default to hiding sensitive data in logs
-- `jamfplatform_base_url` (String) The Jamf platform gateway base URL for authentication when auth_method is 'platform'. Example: https://us.api.platform.jamf.com
 - `jamfpro_instance_fqdn` (String) The Jamf Pro FQDN (fully qualified domain name). example: https://mycompany.jamfcloud.com
 - `jamfpro_load_balancer_lock` (Boolean) Programatically determines all available web app members in the load balancer and locks all instances of httpclient to the app for faster executions. 
 TEMP SOLUTION UNTIL JAMF PROVIDES SOLUTION
+- `jamfpro_tenant_id` (String, Sensitive) The Jamf Pro instance UUID (tenant ID) required when auth_method is 'platform'. Found on the Client Details page in Jamf Account.
 - `mandatory_request_delay_milliseconds` (Number) A mandatory delay after each request before returning to reduce high volume of requests in a short time
-- `tenant_id` (String, Sensitive) The Jamf Pro instance UUID (tenant ID) required when auth_method is 'platform'. Found on the Client Details page in Jamf Account.
+- `platform_base_url` (String) The Jamf platform gateway base URL for authentication when auth_method is 'platform'. Example: https://us.api.platform.jamf.com
 - `token_refresh_buffer_period_seconds` (Number) The buffer period in seconds for token refresh.
 
 <a id="nestedblock--custom_cookies"></a>

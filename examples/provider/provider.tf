@@ -10,8 +10,8 @@ terraform {
 provider "jamfpro" {
   jamfpro_instance_fqdn                = var.jamfpro_instance_fqdn
   auth_method                          = var.jamfpro_auth_method
-  jamfplatform_base_url                = var.jamfplatform_base_url
-  tenant_id                            = var.jamfplatform_tenant_id
+  platform_base_url                    = var.jamfpro_platform_base_url
+  jamfpro_tenant_id                    = var.jamfpro_tenant_id
   client_id                            = var.jamfpro_client_id
   client_secret                        = var.jamfpro_client_secret
   basic_auth_username                  = var.jamfpro_basic_auth_username
@@ -36,13 +36,13 @@ variable "jamfpro_auth_method" {
   default     = ""
 }
 
-variable "jamfplatform_base_url" {
+variable "jamfpro_platform_base_url" {
   description = "The Jamf platform gateway base URL when auth_method is 'platform'. Example: https://us.api.platform.jamf.com"
   type        = string
   default     = ""
 }
 
-variable "jamfplatform_tenant_id" {
+variable "jamfpro_tenant_id" {
   description = "The Jamf Pro instance UUID (tenant ID) when auth_method is 'platform'."
   sensitive   = true
   type        = string
@@ -50,13 +50,13 @@ variable "jamfplatform_tenant_id" {
 }
 
 variable "jamfpro_client_id" {
-  description = "The Jamf Pro Client ID for authentication when auth_method is 'oauth2'."
+  description = "The client ID for authentication. For 'oauth2' this is the Jamf Pro API Client ID. For 'platform' this is the Jamf Platform Client ID from Jamf Account."
   sensitive   = true
   default     = ""
 }
 
 variable "jamfpro_client_secret" {
-  description = "The Jamf Pro Client secret for authentication when auth_method is 'oauth2'."
+  description = "The client secret for authentication. For 'oauth2' this is the Jamf Pro API Client secret. For 'platform' this is the Jamf Platform Client secret from Jamf Account."
   sensitive   = true
   default     = ""
 }

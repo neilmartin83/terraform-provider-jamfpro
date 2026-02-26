@@ -103,8 +103,8 @@ const (
 	envVarBasicAuthPassword           = "JAMFPRO_BASIC_PASSWORD"
 	envVarJamfProFQDN                 = "JAMFPRO_INSTANCE_FQDN"
 	envVarJamfProAuthMethod           = "JAMFPRO_AUTH_METHOD"
-	envVarPlatformBaseURL             = "JAMFPLATFORM_BASE_URL"
-	envVarPlatformTenantID            = "JAMFPLATFORM_TENANT_ID"
+	envVarPlatformBaseURL             = "JAMFPRO_PLATFORM_BASE_URL"
+	envVarPlatformTenantID            = "JAMFPRO_TENANT_ID"
 	jamfLoadBalancerCookieName        = "jpro-ingress"
 )
 
@@ -301,14 +301,14 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(envVarOAuthClientId, ""),
-				Description: "The Jamf Pro Client ID for authentication when auth_method is 'oauth2'.",
+				Description: "The client ID for authentication. When auth_method is 'oauth2', this is the Jamf Pro API Client ID. When auth_method is 'platform', this is the Jamf Platform Client ID from Jamf Account.",
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc(envVarOAuthClientSecret, ""),
-				Description: "The Jamf Pro Client secret for authentication when auth_method is 'oauth2'.",
+				Description: "The client secret for authentication. When auth_method is 'oauth2', this is the Jamf Pro API Client secret. When auth_method is 'platform', this is the Jamf Platform Client secret from Jamf Account.",
 			},
 			"basic_auth_username": {
 				Type:        schema.TypeString,
@@ -323,13 +323,13 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc(envVarBasicAuthPassword, ""),
 				Description: "The Jamf Pro password used for authentication when auth_method is 'basic'.",
 			},
-			"jamfplatform_base_url": {
+			"platform_base_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc(envVarPlatformBaseURL, ""),
 				Description: "The Jamf platform gateway base URL for authentication when auth_method is 'platform'. Example: https://us.api.platform.jamf.com",
 			},
-			"tenant_id": {
+			"jamfpro_tenant_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
@@ -599,20 +599,20 @@ func Provider() *schema.Provider {
 			)
 
 		case "platform":
-			platformBaseURL := d.Get("jamfplatform_base_url").(string)
+			platformBaseURL := d.Get("platform_base_url").(string)
 			if platformBaseURL == "" {
 				return nil, append(diags, diag.Diagnostic{
 					Severity: diag.Error,
 					Summary:  "Error getting platform base URL",
-					Detail:   "jamfplatform_base_url must be provided either as an environment variable (JAMFPLATFORM_BASE_URL) or in the Terraform configuration when using platform auth method",
+					Detail:   "platform_base_url must be provided either as an environment variable (JAMFPRO_PLATFORM_BASE_URL) or in the Terraform configuration when using platform auth method",
 				})
 			}
-			tenantID := d.Get("tenant_id").(string)
+			tenantID := d.Get("jamfpro_tenant_id").(string)
 			if tenantID == "" {
 				return nil, append(diags, diag.Diagnostic{
 					Severity: diag.Error,
 					Summary:  "Error getting tenant ID",
-					Detail:   "tenant_id must be provided either as an environment variable (JAMFPLATFORM_TENANT_ID) or in the Terraform configuration when using platform auth method",
+					Detail:   "jamfpro_tenant_id must be provided either as an environment variable (JAMFPRO_TENANT_ID) or in the Terraform configuration when using platform auth method",
 				})
 			}
 			clientId = GetClientID(d, &diags)
