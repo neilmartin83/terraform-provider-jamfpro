@@ -21,7 +21,7 @@ jobs:
     steps:
 
     - name: Harden Runner
-      uses: step-security/harden-runner@v2.19.4
+      uses: step-security/harden-runner@v2.22.1
       with:
         egress-policy: audit
 
@@ -32,7 +32,7 @@ jobs:
         ref: ${{ github.event.inputs.release_version || github.ref }}
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@v7
       with:
         cache: false
         go-version-file: 'go.mod'
@@ -81,7 +81,7 @@ jobs:
     steps:
 
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.19.4
+        uses: step-security/harden-runner@v2.22.1
         with:
           egress-policy: audit
 

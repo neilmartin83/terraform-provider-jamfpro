@@ -3,11 +3,12 @@ package enrollment_customization
 import (
 	"time"
 
+	"github.com/deploymenttheory/terraform-provider-jamfpro/internal/common/utils"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// resourceJamfProEnrollmentCustomization defines the schema and CRUD operations for managing Jamf Pro Enrollment Customizations in Terraform.
-func ResourceJamfProEnrollmentCustomization() *schema.Resource {
+// resourceSchema defines the schema and CRUD operations for managing Jamf Pro Enrollment Customizations in Terraform.
+func resourceSchema() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: create,
 		ReadContext:   readWithCleanup,
@@ -43,6 +44,10 @@ func ResourceJamfProEnrollmentCustomization() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The description of the enrollment customization.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return utils.NormalizeWhitespace(old) == utils.NormalizeWhitespace(new)
+				},
+				DiffSuppressOnRefresh: true,
 			},
 			"enrollment_customization_image_source": {
 				Type:        schema.TypeString,
@@ -116,6 +121,10 @@ func ResourceJamfProEnrollmentCustomization() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The main content text of the pane.",
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								return utils.NormalizeWhitespace(old) == utils.NormalizeWhitespace(new)
+							},
+							DiffSuppressOnRefresh: true,
 						},
 						"subtext": {
 							Type:        schema.TypeString,
@@ -182,7 +191,7 @@ func ResourceJamfProEnrollmentCustomization() *schema.Resource {
 							Description: "The text for the continue button.",
 						},
 						"ldap_group_access": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
